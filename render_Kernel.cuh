@@ -25,7 +25,6 @@ void drawCircle(SystemCuda system_, int x, int y, int r, int color);
 void drawCircles(SystemCuda system_, int* x, int* y, int* r, int* color, int size);
 void drawDot(SystemCuda system_, int x, int y, int color);
 void drawDots(SystemCuda system_, int* x, int* y, int* color, int size);
-
-
+__global__ void gaussianBlurInPlace(uchar4* image, int width, int height);
 void drawDotNew(SystemCuda system_, int x, int y, int color);
 #endif

@@ -9,6 +9,51 @@ void GpuBufferToSDLSurface(SDL_Surface* screen, void* cuda_pixels, int width, in
     }
 }
 
+__global__ void gaussianBlurInPlace(uchar4* image, int width, int height)
+{
+
+    float gaussianKernel5x5[25] = {
+        1.0f / 256,  4.0f / 256,  6.0f / 256,  4.0f / 256, 1.0f / 256,
+        4.0f / 256, 16.0f / 256, 24.0f / 256, 16.0f / 256, 4.0f / 256,
+        6.0f / 256, 24.0f / 256, 36.0f / 256, 24.0f / 256, 6.0f / 256,
+        4.0f / 256, 16.0f / 256, 24.0f / 256, 16.0f / 256, 4.0f / 256,
+        1.0f / 256,  4.0f / 256,  6.0f / 256,  4.0f / 256, 1.0f / 256
+    };
+    int kernelSize = 5;
+    float* kernel = gaussianKernel5x5;
+    int x = (blockIdx.x * blockDim.x + threadIdx.x) % width;
+    int y = (blockIdx.x * blockDim.x + threadIdx.x) / width;
+    if (x < width && y < height)
+    {
+        float4 result = make_float4(0.0f, 0.0f, 0.0f, 0.0f);
+
+        // Iterate over the Gaussian kernel
+        for (int i = -kernelSize / 2; i <= kernelSize / 2; i++)
+        {
+            for (int j = -kernelSize / 2; j <= kernelSize / 2; j++)
+            {
+                int xOffset = x + i;
+                int yOffset = y + j;
+
+                if (xOffset >= 0 && xOffset < width && yOffset >= 0 && yOffset < height)
+                {
+                    int kernelIndex = (i + kernelSize / 2) * kernelSize + (j + kernelSize / 2);
+                    uchar4 pixel = image[yOffset * width + xOffset];
+                    result.x += static_cast<float>(pixel.x) * kernel[kernelIndex];
+                    result.y += static_cast<float>(pixel.y) * kernel[kernelIndex];
+                    result.z += static_cast<float>(pixel.z) * kernel[kernelIndex];
+                }
+            }
+        }
+
+        image[y * width + x] = make_uchar4(static_cast<unsigned char>(result.x),
+            static_cast<unsigned char>(result.y),
+            static_cast<unsigned char>(result.z),
+            255);
+    }
+}
+
+
 __global__ void global_clearScreenNEw(uchar4* dev_gpuPixels, int width, int height) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
@@ -17,22 +62,43 @@ __global__ void global_clearScreenNEw(uchar4* dev_gpuPixels, int width, int heig
     }
 
     uchar4* element = dev_gpuPixels + index;
-    element->x = 0;
-    element->y = 0;// (blockIdx.x + threadIdx.x) / 4 % 255;
-    element->z = 0;//(width - (index / width) / 4) % 255;
+
+    if (CLEAR_SCREEN_MODE == 0) {
+        
+        element->x = 0;
+        element->y = 0;// (blockIdx.x + threadIdx.x) / 4 % 255;
+        element->z = 0;//(width - (index / width) / 4) % 255;*/
+    }
+
+    else if (CLEAR_SCREEN_MODE == 1) {
+        if (element->x > 20)
+            element->x -= element->x / 20;
+        else 
+            element->x = 0;
+
+        if (element->y > 20)
+            element->y -= element->y / 20;
+        else
+            element->y = 0;
 
 
-    /*if (element->x > 0) {
-        int val = 10;
-        if (element->x < 10) {
-            val = element->x;
-        }
-        element->x-=val;
-    }*/
 
+        if (element->z > 20)
+            element->z -= element->z / 20;
+        else
+            element->z = 0;
+    } 
+    
+    else if (CLEAR_SCREEN_MODE == 2) {
+        if (element->x > 0)
+            element->x -= element->y / 20;
 
-    //*element = { BACKGROUND_R, BACKGROUND_G, BACKGROUND_B, BACKGROUND_A };
+        if (element->y > 0)
+            element->y -= element->z / 20;
 
+        if (element->z > 0)
+            element->z -= element->x / 20;
+    }
 }
 
 void clearScreenNEw(uchar4* dev_gpuPixels, int width, int height) {

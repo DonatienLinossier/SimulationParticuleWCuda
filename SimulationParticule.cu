@@ -488,6 +488,8 @@ int main(int argc, char* argv[])
     float sommeComputation = 0;
     float sommeinput = 0;
 
+
+
     srand((unsigned int)time(nullptr));
 
 
@@ -576,7 +578,7 @@ int main(int argc, char* argv[])
             if (FORCEONMOUSEACTIVE) {
                 system_.particules.forceOnPoint(MousePosition.x, MousePosition.y, dt, FORCEONMOUSESTRENGtH);
             }
-
+            system_.particules.forceOnPoint(1850,1050, dt, FORCEONMOUSESTRENGtH);
             system_.particules.CalcPosition(dt);
 
 
@@ -625,6 +627,13 @@ int main(int argc, char* argv[])
                 system_.particules.GPUdrawFilledCircle(system_.dev_gpuPixels, system_.m_width, system_.m_height);
             if(DRAW_CIRCLE_EDGE)
                 system_.particules.GPUdraw_CircleNew(system_.dev_gpuPixels, system_.m_width, system_.m_height);
+
+            int nbthread = 1024;
+            int numBlocks = (system_.m_width * system_.m_height + nbthread - 1) / nbthread;
+            if (GAUSSIAN_BLUR) {
+                gaussianBlurInPlace << <numBlocks, nbthread >> > (system_.dev_gpuPixels, system_.m_width, system_.m_height);
+            }
+            //bloom << <numBlocks, nbthread >> > (system_.dev_gpuPixels, system_.m_width, system_.m_height, 5, 2);
             cudaDeviceSynchronize();
             system_.getDisplayFromGpu();
 

@@ -9,10 +9,10 @@
 #define PARTICULE_SIZE 2
 #define SIZE_CASE_COEF 3//Min 2, can be increased to reduce realloc of tabs, at the cost of heavier computation
 
-#define FORCEONMOUSEACTIVE false
-#define FORCEONMOUSESTRENGtH 5000
+#define FORCEONMOUSEACTIVE true
+#define FORCEONMOUSESTRENGtH 500
 
-#define GRAVITY 0
+#define GRAVITY 1
 
 #define PARTITIONACTIVE true
 
@@ -39,10 +39,10 @@
 #define SizeMapY 0 
 #define SizeMapW 1000
 #define SizeMapH 700
-#define DEBUG_COLOR_0 { 20, 20, 20, 255 }
-#define DEBUG_COLOR_1 { 0, 0, 255, 255 }
-#define DEBUG_COLOR_2 { 0, 255, 0, 255 }
-#define DEBUG_COLOR_DEFAULT { 255, 255, 255, 255 }
+#define DEBUG_COLOR_0 { 20, 20, 20}
+#define DEBUG_COLOR_1 { 0, 0, 255}
+#define DEBUG_COLOR_2 { 0, 255, 0}
+#define DEBUG_COLOR_DEFAULT { 255, 255, 255}
 
 #define MESSAGE_RECT { 10, 10, 150, 50 }
 #define MESSAGE_COLOR { 255, 255, 255 }

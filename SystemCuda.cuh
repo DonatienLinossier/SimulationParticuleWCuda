@@ -30,8 +30,8 @@ public:
 	SDL_Renderer* pRenderer;
 	SDL_Window* pWindow;
 	SDL_Texture* pTexture;
-	uchar4* dev_gpuPixels;
-	uchar4* hostPixels;
+	uchar3* dev_gpuPixels;
+	uchar3* hostPixels;
 	bool* tabChange; 
 
 public:

@@ -131,13 +131,13 @@ void particuleAoS::addParticules(int nbNewParticules) {
 	size_t intSize = (nbParticule + nbNewParticules) * sizeof(int);
 	size_t boolSize = (nbParticule + nbNewParticules) * sizeof(bool);
 	size_t cellSize = (nbParticule + nbNewParticules) * sizeof(cell);
-	size_t uchar4_tSize = (nbParticule + nbNewParticules) * sizeof(uchar4);
+	size_t uchar3_tSize = (nbParticule + nbNewParticules) * sizeof(uchar3);
 
 	cudaMalloc((void**)&dev_alloc,
 		floatSize * 7 +  // 6 arrays of floats
 		intSize * 2 +  // 3 arrays of ints
 		cellSize * 2 +
-		uchar4_tSize * 1 +
+		uchar3_tSize * 1 +
 		boolSize);       // 1 array of bools
 
 	// Assign pointers to different parts of the allocated memory
@@ -150,7 +150,7 @@ void particuleAoS::addParticules(int nbNewParticules) {
 	dev_tension = dev_vy + (nbParticule + nbNewParticules);
 	dev_cell = reinterpret_cast<cell*>(dev_tension + (nbParticule + nbNewParticules));
 	dev_lastCell = reinterpret_cast<cell*>(dev_lastCell + (nbParticule + nbNewParticules));
-	dev_color = reinterpret_cast<uchar4*>(dev_cell + (nbParticule + nbNewParticules));
+	dev_color = reinterpret_cast<uchar3*>(dev_cell + (nbParticule + nbNewParticules));
 	dev_index = reinterpret_cast<int*>(dev_color + (nbParticule + nbNewParticules));
 	dev_radius = dev_index + (nbParticule + nbNewParticules);
 	dev_changed = reinterpret_cast<bool*>(dev_radius + (nbParticule + nbNewParticules));
@@ -190,9 +190,9 @@ void particuleAoS::addParticules(int nbNewParticules) {
 		cudaMemcpy(dev_lastCell, offset, nbParticule * sizeof(cell), cudaMemcpyDeviceToDevice);
 
 		offset = reinterpret_cast<cell*>(offset) + (nbParticule + nbNewParticules);
-		cudaMemcpy(dev_color, offset, nbParticule * sizeof(uchar4), cudaMemcpyDeviceToDevice);
+		cudaMemcpy(dev_color, offset, nbParticule * sizeof(uchar3), cudaMemcpyDeviceToDevice);
 
-		offset = reinterpret_cast<uchar4*>(offset) + (nbParticule + nbNewParticules);
+		offset = reinterpret_cast<uchar3*>(offset) + (nbParticule + nbNewParticules);
 		cudaMemcpy(dev_index, offset, nbParticule * sizeof(int), cudaMemcpyDeviceToDevice);
 
 		offset = reinterpret_cast<int*>(offset) + (nbParticule + nbNewParticules);
@@ -220,7 +220,7 @@ void particuleAoS::addParticules(int nbNewParticules) {
 	float* new_vy = (float*)malloc(nbNewParticules * sizeof(float));
 	cell* new_cell = (cell*)malloc(nbNewParticules * sizeof(cell));
 	cell* new_lastCell = (cell*)malloc(nbNewParticules * sizeof(cell));
-	uchar4* new_color = (uchar4*)malloc(nbNewParticules * sizeof(uchar4));
+	uchar3* new_color = (uchar3*)malloc(nbNewParticules * sizeof(uchar3));
 	int* new_index = (int*)malloc(nbNewParticules * sizeof(int));
 	int* new_radius = (int*)malloc(nbNewParticules * sizeof(int));
 	float* new_tension = (float*)malloc(nbNewParticules * sizeof(float));
@@ -234,7 +234,7 @@ void particuleAoS::addParticules(int nbNewParticules) {
 		new_lasty[i] = new_y[i] - new_vy[i];
 		new_cell[i] = { -1, -1 };
 		new_lastCell[i] = { -1, -1 }; 
-		new_color[i] = { static_cast<unsigned char>((new_y[i] / height) * 255) , static_cast<unsigned char>(255-(new_y[i] / height) * 255), static_cast<unsigned char>(255 - (new_x[i] / width) * 255), 0};
+		new_color[i] = { static_cast<unsigned char>((new_y[i] / height) * 255) , static_cast<unsigned char>(255-(new_y[i] / height) * 255), static_cast<unsigned char>(255 - (new_x[i] / width) * 255)};
 		new_index[i] = -1;
 		new_radius[i] = PARTICULE_SIZE;
 		new_tension[i] = 0;
@@ -253,7 +253,7 @@ void particuleAoS::addParticules(int nbNewParticules) {
 	cudaMemcpy(dev_tension + nbParticule, new_tension, nbNewParticules * sizeof(float), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_cell + nbParticule, new_cell, nbNewParticules * sizeof(cell), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_lastCell + nbParticule, new_lastCell, nbNewParticules * sizeof(cell), cudaMemcpyHostToDevice);
-	cudaMemcpy(dev_color + nbParticule, new_color, nbNewParticules * sizeof(uchar4), cudaMemcpyHostToDevice);
+	cudaMemcpy(dev_color + nbParticule, new_color, nbNewParticules * sizeof(uchar3), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_index + nbParticule, new_index, nbNewParticules * sizeof(int), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_radius + nbParticule, new_radius, nbNewParticules * sizeof(int), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_changed + nbParticule, new_bool, nbNewParticules * sizeof(bool), cudaMemcpyHostToDevice);
@@ -313,7 +313,7 @@ void particuleAoS::GPUdraw_point(uint32_t* buf, int width, int height) {
 	global_drawDotsBis << <numBlocks, nbthread >> > (buf, width, height, dev_x, dev_y, (int*)dev_color, size);
 }
 
-__global__ void global_drawDotsBisNew(uchar4* dev_gpuPixels, int width, int height, float* tab_x, float* tab_y, int* tab_color, int size) {
+__global__ void global_drawDotsBisNew(uchar3* dev_gpuPixels, int width, int height, float* tab_x, float* tab_y, int* tab_color, int size) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index >= size) {
 		return;
@@ -331,14 +331,13 @@ __global__ void global_drawDotsBisNew(uchar4* dev_gpuPixels, int width, int heig
 	}
 
 	//size_t pos = y * width + x;
-	uchar4* element = dev_gpuPixels + y * width + x;
+	uchar3* element = dev_gpuPixels + y * width + x;
 	element->x = 255; // Red channel
 	element->y = 0;   // Green channel
 	element->z = 0;   // Blue channel
-	element->w = 255; // Alpha channel
 }
 
-void particuleAoS::GPUdraw_pointNew(uchar4* dev_gpuPixels, int width, int height) {
+void particuleAoS::GPUdraw_pointNew(uchar3* dev_gpuPixels, int width, int height) {
 	//drawDots(system_, (int*) dev_x, (int*) dev_y, (int*) dev_color, nbParticule);
 	int size = nbParticule;
 
@@ -356,7 +355,7 @@ void particuleAoS::GPUdraw_pointNew(uchar4* dev_gpuPixels, int width, int height
 }
 
 
-__device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPixels, int width, int height, uchar4 color)
+__device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar3* dev_gpuPixels, int width, int height, uchar3 color)
 {
 	//printf("color %d", color);
 	/*
@@ -373,7 +372,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 	int xc_add_y = xc + y;
 	int xc_sub_y = xc - y;
 
-	uchar4* limite = dev_gpuPixels + height * width;
+	uchar3* limite = dev_gpuPixels + height * width;
 
 
 	if (!(yc_add_y >= height)) {
@@ -381,7 +380,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 		//int pos = yc_add_y * width + xc_add_x;
 
 		if (!(xc_add_x >= width)) {
-			uchar4* element = dev_gpuPixels + yc_add_y * width + xc_add_x;
+			uchar3* element = dev_gpuPixels + yc_add_y * width + xc_add_x;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -389,7 +388,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 
 		//pos = yc_add_y * width + xc_sub_x;
 		if (!(xc_sub_x < 0)) {
-			uchar4* element = dev_gpuPixels + yc_add_y * width + xc_sub_x;
+			uchar3* element = dev_gpuPixels + yc_add_y * width + xc_sub_x;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -400,7 +399,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 	if (!(yc_sub_y < 0)) {
 		//int pos = yc_sub_y * width + xc_add_x;
 		if (!(xc_add_x >= width)) {
-			uchar4* element = dev_gpuPixels + yc_sub_y * width + xc_add_x;
+			uchar3* element = dev_gpuPixels + yc_sub_y * width + xc_add_x;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -408,7 +407,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 
 		//pos = yc_sub_y * width + xc_sub_x;
 		if (!(xc_sub_x < 0)) {
-			uchar4* element = dev_gpuPixels + yc_sub_y * width + xc_sub_x;
+			uchar3* element = dev_gpuPixels + yc_sub_y * width + xc_sub_x;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -421,7 +420,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 	if (!(yc_add_x >= height)) {
 		//int pos = yc_add_x * width + xc_add_y;
 		if (!(xc_add_y >= width)) {
-			uchar4* element = dev_gpuPixels + yc_add_x * width + xc_add_y;
+			uchar3* element = dev_gpuPixels + yc_add_x * width + xc_add_y;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -429,7 +428,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 
 		//pos = yc_add_x * width + xc_sub_y;
 		if (!(xc_sub_y < 0)) {
-			uchar4* element = dev_gpuPixels + yc_add_x * width + xc_sub_y;
+			uchar3* element = dev_gpuPixels + yc_add_x * width + xc_sub_y;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -440,7 +439,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 	if (!(yc_sub_x < 0)) {
 		//int pos = yc_sub_x * width + xc_add_y;
 		if (!(xc_add_y >= width)) {
-			uchar4* element = dev_gpuPixels + yc_sub_x * width + xc_add_y;
+			uchar3* element = dev_gpuPixels + yc_sub_x * width + xc_add_y;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -448,7 +447,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 
 		//pos = yc_sub_x * width + xc_sub_y;
 		if (!(xc_sub_y < 0)) {
-			uchar4* element = dev_gpuPixels + yc_sub_x * width + xc_sub_y;
+			uchar3* element = dev_gpuPixels + yc_sub_x * width + xc_sub_y;
 			if (element >= limite)
 				return;
 			*element = color;
@@ -456,7 +455,7 @@ __device__ void drawCircle_arcs(int xc, int yc, int x, int y, uchar4* dev_gpuPix
 	}
 }
 
-__global__ void global_drawCircleNew(uchar4* dev_gpuPixels, int width, int height, float* tab_x, float* tab_y, int* tab_radius, uchar4* tab_color, float* dev_tension, int size) {
+__global__ void global_drawCircleNew(uchar3* dev_gpuPixels, int width, int height, float* tab_x, float* tab_y, int* tab_radius, uchar3* tab_color, float* dev_tension, int size) {
 
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index >= size) {
@@ -467,7 +466,7 @@ __global__ void global_drawCircleNew(uchar4* dev_gpuPixels, int width, int heigh
 	int yc = tab_y[index];
 	int r = tab_radius[index];
 	//int color = tab_color[index];
-	uchar4 color = tab_color[index];// (int)(dev_tension[index] * 255) % 255;
+	uchar3 color = tab_color[index];// (int)(dev_tension[index] * 255) % 255;
 
 	int x = 0, y = r;
 	int d = 3 - 2 * r;
@@ -494,7 +493,7 @@ __global__ void global_drawCircleNew(uchar4* dev_gpuPixels, int width, int heigh
 
 }
 
-void particuleAoS::GPUdraw_CircleNew(uchar4* dev_gpuPixels, int width, int height) {
+void particuleAoS::GPUdraw_CircleNew(uchar3* dev_gpuPixels, int width, int height) {
 	//drawDots(system_, (int*) dev_x, (int*) dev_y, (int*) dev_color, nbParticule);
 	int size = nbParticule;
 
@@ -511,7 +510,7 @@ void particuleAoS::GPUdraw_CircleNew(uchar4* dev_gpuPixels, int width, int heigh
 	}
 }
 
-__global__ void global_GPUdrawFilledCircle(uchar4* dev_gpuPixels, int width, int height, float* dev_x, float* dev_y, int* dev_radius, uchar4* dev_color, int size)
+__global__ void global_GPUdrawFilledCircle(uchar3* dev_gpuPixels, int width, int height, float* dev_x, float* dev_y, int* dev_radius, uchar3* dev_color, int size)
 {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 	if (index >= size) {
@@ -521,10 +520,10 @@ __global__ void global_GPUdrawFilledCircle(uchar4* dev_gpuPixels, int width, int
 	int xc = dev_x[index];
 	int yc = dev_y[index];
 	int radius = dev_radius[index];
-	uchar4 color = dev_color[index];
+	uchar3 color = dev_color[index];
 	int rSquared = radius * radius;
 
-	uchar4* limite = dev_gpuPixels + height * width;
+	uchar3* limite = dev_gpuPixels + height * width;
 
 	for (int y = -radius; y <= radius; y++) {
 		for (int x = -radius; x <= radius; x++) {
@@ -533,7 +532,7 @@ __global__ void global_GPUdrawFilledCircle(uchar4* dev_gpuPixels, int width, int
 				int ypos = yc + y;
 
 				if (xpos >= 0 && xpos < width && ypos >= 0 && ypos < height) {
-					uchar4* element = dev_gpuPixels + ypos * width + xpos;
+					uchar3* element = dev_gpuPixels + ypos * width + xpos;
 					if (element >= limite)
 						continue;
 					*element = color;
@@ -543,7 +542,7 @@ __global__ void global_GPUdrawFilledCircle(uchar4* dev_gpuPixels, int width, int
 	}
 }
 
-void particuleAoS::GPUdrawFilledCircle(uchar4* dev_gpuPixels, int width, int height) {
+void particuleAoS::GPUdrawFilledCircle(uchar3* dev_gpuPixels, int width, int height) {
 	int size = nbParticule;
 
 	int nbthread = 1024;

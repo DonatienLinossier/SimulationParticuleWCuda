@@ -34,8 +34,8 @@ public:
 	__device__ cell dev_toCell(int index, float SIZECASEX, float SIZECASEY, int CASEMAXX, int CASEMAXY);
 	void collision(int** dev_grilleP2D, int* dev_sizeTabs);
 	void GPUdraw_point(uint32_t* buf, int width, int height);
-	void GPUdraw_pointNew(uchar4* dev_gpuPixels, int width, int height);
-	void GPUdraw_CircleNew(uchar4* dev_gpuPixels, int width, int height);
+	void GPUdraw_pointNew(uchar3* dev_gpuPixels, int width, int height);
+	void GPUdraw_CircleNew(uchar3* dev_gpuPixels, int width, int height);
 
 	__device__ cell getCell(int index);
 	__device__ void setChanged(int index, bool newValue);
@@ -50,7 +50,7 @@ public:
 	__device__ float getY(int index);
 	__device__ float getTension(int index);
 	__device__ void setTension(int index, float newValue);
-	void GPUdrawFilledCircle(uchar4* dev_gpuPixels, int width, int height);
+	void GPUdrawFilledCircle(uchar3* dev_gpuPixels, int width, int height);
 
 
 	float* dev_x;
@@ -78,7 +78,7 @@ private:
 	float* dev_vy;
 	cell* dev_cell; 
 	cell* dev_lastCell;
-	uchar4* dev_color;
+	uchar3* dev_color;
 	int* dev_id;
 	int* dev_radius;
 	int* dev_index;

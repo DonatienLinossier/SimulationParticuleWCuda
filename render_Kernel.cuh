@@ -15,7 +15,7 @@
 void GpuBufferToSDLSurface(SDL_Surface* screen, void* cuda_pixels, int width, int height);
 
 void clearScreen(void* cuda_pixels);
-void clearScreenNEw(uchar4* dev_gpuPixels, int width, int height);
+void clearScreenNEw(uchar3* dev_gpuPixels, int width, int height);
 
 void drawline(SystemCuda system_, int x0, int y0, int x1, int y1, int color);
 void drawlines(SystemCuda system_, int* x0, int* y0, int* x1, int* y1, int* color, int size);
@@ -25,6 +25,6 @@ void drawCircle(SystemCuda system_, int x, int y, int r, int color);
 void drawCircles(SystemCuda system_, int* x, int* y, int* r, int* color, int size);
 void drawDot(SystemCuda system_, int x, int y, int color);
 void drawDots(SystemCuda system_, int* x, int* y, int* color, int size);
-__global__ void gaussianBlurInPlace(uchar4* image, int width, int height);
+__global__ void gaussianBlurInPlace(uchar3* image, int width, int height);
 void drawDotNew(SystemCuda system_, int x, int y, int color);
 #endif

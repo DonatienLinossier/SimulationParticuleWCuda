@@ -9,7 +9,7 @@ void GpuBufferToSDLSurface(SDL_Surface* screen, void* cuda_pixels, int width, in
     }
 }
 
-__global__ void gaussianBlurInPlace(uchar4* image, int width, int height)
+__global__ void gaussianBlurInPlace(uchar3* image, int width, int height)
 {
 
     float gaussianKernel5x5[25] = {
@@ -38,7 +38,7 @@ __global__ void gaussianBlurInPlace(uchar4* image, int width, int height)
                 if (xOffset >= 0 && xOffset < width && yOffset >= 0 && yOffset < height)
                 {
                     int kernelIndex = (i + kernelSize / 2) * kernelSize + (j + kernelSize / 2);
-                    uchar4 pixel = image[yOffset * width + xOffset];
+                    uchar3 pixel = image[yOffset * width + xOffset];
                     result.x += static_cast<float>(pixel.x) * kernel[kernelIndex];
                     result.y += static_cast<float>(pixel.y) * kernel[kernelIndex];
                     result.z += static_cast<float>(pixel.z) * kernel[kernelIndex];
@@ -46,22 +46,21 @@ __global__ void gaussianBlurInPlace(uchar4* image, int width, int height)
             }
         }
 
-        image[y * width + x] = make_uchar4(static_cast<unsigned char>(result.x),
+        image[y * width + x] = make_uchar3(static_cast<unsigned char>(result.x),
             static_cast<unsigned char>(result.y),
-            static_cast<unsigned char>(result.z),
-            255);
+            static_cast<unsigned char>(result.z));
     }
 }
 
 
-__global__ void global_clearScreenNEw(uchar4* dev_gpuPixels, int width, int height) {
+__global__ void global_clearScreenNEw(uchar3* dev_gpuPixels, int width, int height) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (index >= width * height) {
         return; // Out-of-bounds thread
     }
 
-    uchar4* element = dev_gpuPixels + index;
+    uchar3* element = dev_gpuPixels + index;
 
     if (CLEAR_SCREEN_MODE == 0) {
         
@@ -101,7 +100,7 @@ __global__ void global_clearScreenNEw(uchar4* dev_gpuPixels, int width, int heig
     }
 }
 
-void clearScreenNEw(uchar4* dev_gpuPixels, int width, int height) {
+void clearScreenNEw(uchar3* dev_gpuPixels, int width, int height) {
     int nbthread = 1024;
     int numBlocks = (width * height + nbthread - 1) / nbthread;
 

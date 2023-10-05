@@ -235,13 +235,13 @@ void call_collisionAoS(SystemCuda system_) {
     }
 }
 
-__device__ void GPU_drawSizeMiniMap_Tilenew(uchar4* dev_gpuPixels, int x, int y, int w, int h, int m_nbCaseX, int m_nbCaseY, int width, int height, int sizevalue) {
+__device__ void GPU_drawSizeMiniMap_Tilenew(uchar3* dev_gpuPixels, int x, int y, int w, int h, int m_nbCaseX, int m_nbCaseY, int width, int height, int sizevalue) {
     int xsize = w / m_nbCaseX;
     int ysize = h / m_nbCaseY;
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     int linex = index % m_nbCaseX;
     int liney = index / m_nbCaseX;
-    uchar4 color;//RGBA
+    uchar3 color;//RGBA
     switch (sizevalue) {
     case 0:
         color = DEBUG_COLOR_0;
@@ -271,14 +271,14 @@ __device__ void GPU_drawSizeMiniMap_Tilenew(uchar4* dev_gpuPixels, int x, int y,
             /*if (liney % 3 == 0 && linex % 3 == 0) {//show first case of each thread
                 color = { 100, 100, 100, 255 };
             }*/
-            uchar4* element = dev_gpuPixels + j * width + i;
+            uchar3* element = dev_gpuPixels + j * width + i;
             *element = color;
 
         }
     }
 }
 
-__global__ void GPU_drawSizeMiniMapNEw(uchar4* dev_gpuPixels, int x, int y, int w, int h, int m_nbCaseX, int m_nbCaseY, int width, int height, int* dev_SizeTab) {
+__global__ void GPU_drawSizeMiniMapNEw(uchar3* dev_gpuPixels, int x, int y, int w, int h, int m_nbCaseX, int m_nbCaseY, int width, int height, int* dev_SizeTab) {
     int index = blockIdx.x * blockDim.x + threadIdx.x;
     if (index >= m_nbCaseX * m_nbCaseY)
         return;
@@ -578,7 +578,6 @@ int main(int argc, char* argv[])
             if (FORCEONMOUSEACTIVE) {
                 system_.particules.forceOnPoint(MousePosition.x, MousePosition.y, dt, FORCEONMOUSESTRENGtH);
             }
-            system_.particules.forceOnPoint(1850,1050, dt, FORCEONMOUSESTRENGtH);
             system_.particules.CalcPosition(dt);
 
 

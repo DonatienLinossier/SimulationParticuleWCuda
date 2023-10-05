@@ -43,22 +43,22 @@ int SystemCuda::initSDL() {
     }
 
     //Creation of the texture
-    pTexture = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, m_width, m_height);
+    pTexture = SDL_CreateTexture(pRenderer, SDL_PIXELFORMAT_RGB24, SDL_TEXTUREACCESS_STREAMING, m_width, m_height);
 
 
     //Allocation of the Pixels on the gpu
-    cudaMalloc(&dev_gpuPixels, m_width * sizeof(uchar4)* m_height);
+    cudaMalloc(&dev_gpuPixels, m_width * sizeof(uchar3)* m_height);
 
 
     //Allocation of the Pixels on the cpu - The memory is pitched for faster transfert GPU->CPU
-    cudaMallocHost(&hostPixels, m_width * m_height * sizeof(uchar4));
+    cudaMallocHost(&hostPixels, m_width * m_height * sizeof(uchar3));
 
 
     return 0;
 }
 
 int SystemCuda::displaySDL(SDL_Texture* Message, SDL_Rect Message_rect) {
-    SDL_UpdateTexture(pTexture, NULL, hostPixels, m_width * sizeof(uchar4));
+    SDL_UpdateTexture(pTexture, NULL, hostPixels, m_width * sizeof(uchar3));
     SDL_RenderCopy(pRenderer, pTexture, NULL, NULL);
     SDL_RenderCopy(pRenderer, Message, NULL, &Message_rect);
     SDL_RenderPresent(pRenderer);
@@ -69,7 +69,7 @@ int SystemCuda::displaySDL(SDL_Texture* Message, SDL_Rect Message_rect) {
 int SystemCuda::getDisplayFromGpu() {
 
     // Your CUDA code here
-    cudaError_t err = cudaMemcpy(hostPixels, dev_gpuPixels, m_width * sizeof(uchar4) * m_height, cudaMemcpyDeviceToHost);
+    cudaError_t err = cudaMemcpy(hostPixels, dev_gpuPixels, m_width * sizeof(uchar3) * m_height, cudaMemcpyDeviceToHost);
 
     if (err != cudaSuccess) {
         printf("Erreur à l'interieur du blit: %s\n", cudaGetErrorString(err));

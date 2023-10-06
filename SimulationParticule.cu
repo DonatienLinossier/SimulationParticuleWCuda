@@ -323,32 +323,52 @@ __global__ void addSizeAndSetIndexAoS(int* dev_sizeTabs, int nbparts, particuleA
     }
 }
 
+/**
+ * @brief [Kernel] resize or free memory of the partition array of particles in StructOfArray format.
+ *
+ * @param dev_sizeTabs   - Array containing new sizes for each cell.
+ * @param dev_grilleP2D  - Array of pointers to particle data.
+ * @param particuleAoS   - Object storing particles in StructOfArray and provinding functions
+ * @param tabChange      - Array indicating whether a change is needed for each cell.
+ * @param prevSizeTab    - Array storing the previous sizes for each cell.
+ * @param CASEMAXX       - Maximum X dimension of the grid.
+ * @param CASEMAXY       - Maximum Y dimension of the grid.
+ */
+__global__ void changeSizeTabSoA(int* dev_sizeTabs, int** dev_grilleP2D, particuleAoS particuleAoS, bool* tabChange, int* prevSizeTab, int CASEMAXX, int CASEMAXY) {
+        int index = blockIdx.x * blockDim.x + threadIdx.x;
 
-__global__ void changeSizeTabAoS(int* dev_sizeTabs, int** dev_grilleP2D, particuleAoS particuleAoS, bool* tabChange, int* prevSizeTab, int CASEMAXX, int CASEMAXY) {
-    int index = blockIdx.x * blockDim.x + threadIdx.x;
+        if (index >= CASEMAXX * CASEMAXY)
+            return;
 
-    if (index >= CASEMAXX * CASEMAXY)
-        return;
+        //No change in the tab -> early return
+        if (!tabChange[index])
+            return;
 
-    if (!tabChange[index])
-        return;
-
-
-    int* copie = dev_grilleP2D[index];
-
-    //cas ou plus de balle dans la case (+si nb negatif)
-    if (dev_sizeTabs[index] <= 0) {
-        dev_grilleP2D[index] = nullptr;
-
-    } else {
-        //Copie du nv tab avec le bon nombre de case
-        cudaError_t cudaStatus = cudaMalloc((void**)&dev_grilleP2D[index], dev_sizeTabs[index] * sizeof(int));
-        if (cudaStatus != cudaSuccess) {
-            printf("mouap cudaMalloc of size %d failed: %s\n", dev_sizeTabs[index], cudaGetErrorString(cudaStatus));
+        //Case of new size = 0 -> No Allocation nor index rearrangement needed, just freeing. -> early return;
+        if (dev_sizeTabs[index] <= 0) {
+            if (dev_grilleP2D[index] != nullptr)
+                cudaFree(dev_grilleP2D[index]);
+            dev_grilleP2D[index] = nullptr;
+            prevSizeTab[index] = dev_sizeTabs[index];
+            tabChange[index] = false;
+            return;
         }
 
 
-        //copie des elements restant dans la meme case dans le nv tab
+        //Store the last tab : Used for index rearrangement and for freeing it
+        int* copie = dev_grilleP2D[index];
+
+        //Case change size -> create a new tab
+        // Case no change size -> reutilization of last allocation, no allocation needed
+        if (dev_sizeTabs[index] != prevSizeTab[index]) {
+            cudaError_t cudaStatus = cudaMalloc((void**)&dev_grilleP2D[index], dev_sizeTabs[index] * sizeof(int));
+            if (cudaStatus != cudaSuccess) {
+                    printf("mouap cudaMalloc of size %d failed: %s\n", dev_sizeTabs[index], cudaGetErrorString(cudaStatus));
+            }
+        }
+
+        //Case change size -> Copy the indexs that are still in this case in the new cudaAlloc
+        //Case no change size -> Rearrange the indexes to the begining of the tab
         int it = 0;
         for (int i = 0; i < prevSizeTab[index]; i++) {
             if (!(copie[i] == -1)) {
@@ -357,14 +377,20 @@ __global__ void changeSizeTabAoS(int* dev_sizeTabs, int** dev_grilleP2D, particu
                 it++;
             }
         }
-    }
 
-    if (copie != nullptr)
-        cudaFree(copie);
 
-    prevSizeTab[index] = dev_sizeTabs[index];
-    tabChange[index] = false;
+        //Case change size, free last alloc
+        if (dev_sizeTabs[index] != prevSizeTab[index]) {
+            if (copie != nullptr)
+                cudaFree(copie);
+        }
+
+
+        // Update size and resetting tabChange
+        prevSizeTab[index] = dev_sizeTabs[index];
+        tabChange[index] = false;
 }
+
 
 
 __global__ void addNewElementsInTabAoS(int* dev_sizeTabs, int** dev_grilleP2D, int nbparts, particuleAoS particuleAoS, int CASEMAXX) {
@@ -424,7 +450,7 @@ void partitionFunctionsAoS(SystemCuda system_) {
 
 
     cudaEventRecord(start);
-    changeSizeTabAoS << <numBlocks, nbthread >> > (system_.dev_sizeTabs, system_.dev_grilleP2D, system_.particules, system_.tabChange, system_.dev_previousSizeTabs, system_.m_nbCaseX, system_.m_nbCaseY);
+    changeSizeTabSoA << <numBlocks, nbthread >> > (system_.dev_sizeTabs, system_.dev_grilleP2D, system_.particules, system_.tabChange, system_.dev_previousSizeTabs, system_.m_nbCaseX, system_.m_nbCaseY);
     cudaEventRecord(stop);
     cudaEventSynchronize(stop);
 

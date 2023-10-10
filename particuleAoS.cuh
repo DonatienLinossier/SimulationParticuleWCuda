@@ -36,7 +36,7 @@ public:
 	void GPUdraw_point(uint32_t* buf, int width, int height);
 	void GPUdraw_pointNew(uchar3* dev_gpuPixels, int width, int height);
 	void GPUdraw_CircleNew(uchar3* dev_gpuPixels, int width, int height);
-
+	void addParticules(int nbNewParticules, int x, int y, int vx, int vy);
 	__device__ cell getCell(int index);
 	__device__ void setChanged(int index, bool newValue);
 	__device__ bool getChanged(int index);
@@ -77,7 +77,7 @@ private:
 	float* dev_vx;
 	float* dev_vy;
 	cell* dev_cell; 
-	cell* dev_lastCell;
+	//cell* dev_lastCell;
 	uchar3* dev_color;
 	int* dev_id;
 	int* dev_radius;

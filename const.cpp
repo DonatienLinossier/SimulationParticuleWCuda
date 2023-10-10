@@ -5,11 +5,11 @@
 #define WIDTH 1800
 
 #define NB_PARTICULES 1
-#define NBNEWPARTS 80000
-#define PARTICULE_SIZE 2
+#define NBNEWPARTS 1000
+#define PARTICULE_SIZE 10
 #define SIZE_CASE_COEF 3//Min 2, can be increased to reduce realloc of tabs, at the cost of heavier computation
 
-#define FORCEONMOUSEACTIVE true
+#define FORCEONMOUSEACTIVE false
 #define FORCEONMOUSESTRENGtH 500
 
 #define GRAVITY 1
@@ -33,6 +33,8 @@
 #define DRAW_CIRCLE_EDGE true
 #define GAUSSIAN_BLUR false
 
+
+#define DEBUG_SHOW_MEMORY_ALLOCATION false
 #define SHOW_TIME false
 #define DRAWGPUDEBUG false
 #define SizeMapX 50

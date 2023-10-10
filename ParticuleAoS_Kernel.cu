@@ -55,7 +55,7 @@ __global__ void CalcPosition_global(float* p_x, float* p_y, float* p_lastx, floa
 Laisser la cell de retour en argument ?? -> lourd en transfert
 Ou creer carrement un tab contenant les last Cell; -> lourd en memoire
 */
-__global__ void toCell_global(float* p_x, float* p_y, cell* p_cell, cell* p_lastCell, int nbParticule, int SIZECASEX, int SIZECASEY, int CASEMAXX, int CASEMAXY) {
+__global__ void toCell_global(float* p_x, float* p_y, cell* p_cell, int nbParticule, int SIZECASEX, int SIZECASEY, int CASEMAXX, int CASEMAXY) {
 	int index = blockIdx.x * blockDim.x + threadIdx.x;
 
 	if (index >= nbParticule) {
@@ -89,7 +89,7 @@ __global__ void toCell_global(float* p_x, float* p_y, cell* p_cell, cell* p_last
 			p_cell[index].y = CASEMAXY - 1;
 		}
 	}
-	p_lastCell[index] = p_cell[index];
+	//p_lastCell[index] = p_cell[index];
 	//retour[index] = retoure;
 }
 

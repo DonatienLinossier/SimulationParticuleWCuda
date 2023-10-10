@@ -569,7 +569,7 @@ int main(int argc, char* argv[])
                 break;
             case SDL_MOUSEWHEEL:
                 SDL_GetMouseState(&MousePosition.x, &MousePosition.y);
-                //system_.addParticule(MousePosition.x, MousePosition.y);
+                system_.particules.addParticules(1, MousePosition.x, MousePosition.y, 5, 0);
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 mouseDown = true;
@@ -586,7 +586,7 @@ int main(int argc, char* argv[])
             SDL_GetMouseState(&MousePosition.x, &MousePosition.y);
             int x = MousePosition.x;
             int y = MousePosition.y;
-            //system_.particules.addParticules(1); 
+            system_.particules.addParticules(1, x, y, 5, 0); 
         }
 
 

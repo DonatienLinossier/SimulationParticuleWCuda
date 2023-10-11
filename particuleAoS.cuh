@@ -55,6 +55,7 @@ public:
 
 	float* dev_x;
 	float* dev_y; 
+	int* dev_radius;
 private:
 	 
 	
@@ -77,10 +78,9 @@ private:
 	float* dev_vx;
 	float* dev_vy;
 	cell* dev_cell; 
-	//cell* dev_lastCell;
 	uchar3* dev_color;
 	int* dev_id;
-	int* dev_radius;
+
 	int* dev_index;
 	float* dev_tension;
 	bool* dev_changed;

@@ -53,6 +53,9 @@ int SystemCuda::initSDL() {
     //Allocation of the Pixels on the cpu - The memory is pitched for faster transfert GPU->CPU
     cudaMallocHost(&hostPixels, m_width * m_height * sizeof(uchar3));
 
+    //Tab for the metaballs computation
+    cudaMalloc(&dev_metaballs, m_width * sizeof(double) * m_height);
+
 
     return 0;
 }
@@ -119,7 +122,6 @@ void SystemCuda::allocateGrilleP() {
     }
     cudaMemcpy(dev_sizeTabs, arrayt, width * height * sizeof(int), cudaMemcpyHostToDevice);
     cudaMemcpy(dev_previousSizeTabs, arrayt, width * height * sizeof(int), cudaMemcpyHostToDevice);
-    //host_sizetab = arrayt; we do not use the host anymore
     free(arrayt);
 
     cudaError_t cudaStatus = cudaGetLastError();

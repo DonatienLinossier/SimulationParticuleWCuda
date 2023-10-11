@@ -5,7 +5,7 @@
 #define WIDTH 1800
 
 #define NB_PARTICULES 1
-#define NBNEWPARTS 1000
+#define NBNEWPARTS 1
 #define PARTICULE_SIZE 10
 #define SIZE_CASE_COEF 3//Min 2, can be increased to reduce realloc of tabs, at the cost of heavier computation
 
@@ -27,10 +27,10 @@
 #define BACKGROUND_B 0
 #define BACKGROUND_A 0
 
-#define CLEAR_SCREEN_MODE 1//0-> black screen; 1-> {x-x/20, y-y/20, z-z/20, . }, 2-> {x-y/20, y-z/20, z-x/20, . }
+#define CLEAR_SCREEN_MODE 0//0-> black screen; 1-> {x-x/20, y-y/20, z-z/20, . }, 2-> {x-y/20, y-z/20, z-x/20, . }
 
-#define DRAW_CIRCLE_FILLED true
-#define DRAW_CIRCLE_EDGE true
+#define DRAW_CIRCLE_FILLED false
+#define DRAW_CIRCLE_EDGE false
 #define GAUSSIAN_BLUR false
 
 
@@ -51,6 +51,13 @@
 
 #define DELTA_TIME 0.0001f
 
+#define METABALLS_RENDERING true
+#define METABALLS_RADIUSCOMPAREDTOPARTICULESIZE 3 
+#define METABALLS_INTENSITY 100
+#define METABALLS_ATTENUATIONFACTOR 0.005
+#define METABALLS_THRESHOLD_DEEP 75
+#define METABALLS_THRESHOLD_MEDIUM 25
+#define METABALLS_THRESHOLD_BORDER 15
 //CUDA
 
 #define CUDA_DEVICE 0

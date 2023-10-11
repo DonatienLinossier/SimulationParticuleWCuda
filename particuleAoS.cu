@@ -217,7 +217,6 @@ void particuleAoS::addParticules(int nbNewParticules) {
 
 	//Copie des anciens elements
 	if (cpy_alloc != nullptr) {
-		void* offset = cpy_alloc;
 		cudaMemcpy(dev_x, last_dev_x, nbParticule * sizeof(float), cudaMemcpyDeviceToDevice);
 
 		cudaMemcpy(dev_y, last_dev_y, nbParticule * sizeof(float), cudaMemcpyDeviceToDevice);
@@ -437,7 +436,6 @@ void particuleAoS::addParticules(int nbNewParticules, int x, int y, int vx, int 
 
 	//Copie des anciens elements
 	if (cpy_alloc != nullptr) {
-		void* offset = cpy_alloc;
 		cudaMemcpy(dev_x, last_dev_x, nbParticule * sizeof(float), cudaMemcpyDeviceToDevice);
 
 		cudaMemcpy(dev_y, last_dev_y, nbParticule * sizeof(float), cudaMemcpyDeviceToDevice);

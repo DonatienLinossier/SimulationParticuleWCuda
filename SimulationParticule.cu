@@ -497,14 +497,88 @@ void partitionFunctionsAoS(SystemCuda system_) {
 
 
 
+__global__ void global_clearMetaballs(int nbPixels, double* dev_metaballs) {
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index >= nbPixels) {
+        return;
+    }
+
+    dev_metaballs[index] = 0;
+
+}
+
+__global__ void global_ParticulesToMetaBallsInfluence(particuleAoS particuleAoS, double* dev_metaballs, int width, int height) {
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index >= particuleAoS.nbParticule) {
+        return;
+    }
+    
+    int xc = particuleAoS.dev_x[index];
+    int yc = particuleAoS.dev_y[index];
+    int radius = particuleAoS.dev_radius[index]* METABALLS_RADIUSCOMPAREDTOPARTICULESIZE;
+    int rSquared = radius * radius;
+
+    double* limite = dev_metaballs + height * width;
+
+    for (int y = -radius; y <= radius; y++) {
+        for (int x = -radius; x <= radius; x++) {
+            
+            if (x * x + y * y <= rSquared) {
+                double distance = x * x + y * y;
+                int xpos = xc + x;
+                int ypos = yc + y;
+
+                if (xpos >= 0 && xpos < width && ypos >= 0 && ypos < height) {
+                    double* element = dev_metaballs + ypos * width + xpos;
+                    if (element >= limite)
+                        continue;
 
 
+                    int grayscale = METABALLS_INTENSITY * exp(-METABALLS_ATTENUATIONFACTOR * distance);
+                    *element += grayscale;                    
+                }
+            }
+        }
+    }
+}
 
 
+__global__ void global_metaballsGridToRender(int nbPixels, double* dev_metaballs, int width, int height, uchar3* dev_gpuPixels) {
+    int index = blockIdx.x * blockDim.x + threadIdx.x;
+    if (index >= nbPixels) {
+        return;
+    }
+
+    if (dev_metaballs[index] > METABALLS_THRESHOLD_DEEP) {
+        dev_gpuPixels[index] = { 0, 0, 100 };
+    } else if (dev_metaballs[index] > METABALLS_THRESHOLD_MEDIUM) {
+        dev_gpuPixels[index] = { 0, 0, 255 };
+    }
+    else if (dev_metaballs[index] > METABALLS_THRESHOLD_BORDER) {
+        dev_gpuPixels[index] =  { 200, 200, 255 };
+    }
+}
 
 
+void call_metaballs(SystemCuda system_) {
+    int nbthread = 1024;
+    int numBlocks = (system_.m_width * system_.m_height + nbthread - 1) / nbthread;
 
+    global_clearMetaballs << <numBlocks, nbthread >> > (system_.m_width * system_.m_height, system_.dev_metaballs);
+    cudaThreadSynchronize();
 
+    nbthread = 1024;
+    numBlocks = (system_.particules.nbParticule + nbthread - 1) / nbthread;
+
+    global_ParticulesToMetaBallsInfluence << <numBlocks, nbthread >> > (system_.particules, system_.dev_metaballs, system_.m_width, system_.m_height);
+    cudaThreadSynchronize();
+
+    nbthread = 1024;
+    numBlocks = (system_.m_width * system_.m_height + nbthread - 1) / nbthread;
+
+    global_metaballsGridToRender << <numBlocks, nbthread >> > (system_.m_width * system_.m_height, system_.dev_metaballs, system_.m_width, system_.m_height, system_.dev_gpuPixels);
+    cudaThreadSynchronize();
+}
 
 int main(int argc, char* argv[])
 {
@@ -569,7 +643,7 @@ int main(int argc, char* argv[])
                 break;
             case SDL_MOUSEWHEEL:
                 SDL_GetMouseState(&MousePosition.x, &MousePosition.y);
-                system_.particules.addParticules(1, MousePosition.x, MousePosition.y, 5, 0);
+                system_.particules.addParticules(1, MousePosition.x, MousePosition.y, 0, 0);
                 break;
             case SDL_MOUSEBUTTONDOWN:
                 mouseDown = true;
@@ -586,7 +660,7 @@ int main(int argc, char* argv[])
             SDL_GetMouseState(&MousePosition.x, &MousePosition.y);
             int x = MousePosition.x;
             int y = MousePosition.y;
-            system_.particules.addParticules(1, x, y, 5, 0); 
+            system_.particules.addParticules(1, x, y, 0, 0); 
         }
 
 
@@ -652,6 +726,9 @@ int main(int argc, char* argv[])
                 system_.particules.GPUdrawFilledCircle(system_.dev_gpuPixels, system_.m_width, system_.m_height);
             if(DRAW_CIRCLE_EDGE)
                 system_.particules.GPUdraw_CircleNew(system_.dev_gpuPixels, system_.m_width, system_.m_height);
+            if(METABALLS_RENDERING) 
+                call_metaballs(system_);
+
 
             int nbthread = 1024;
             int numBlocks = (system_.m_width * system_.m_height + nbthread - 1) / nbthread;

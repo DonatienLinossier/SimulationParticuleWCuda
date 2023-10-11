@@ -24,8 +24,10 @@ public:
 
 	particuleAoS particules;
 
+
+	double* dev_metaballs;
 	int** dev_grilleP2D;
-	int* dev_sizeTabs;
+	int* dev_sizeTabs; 
 	int* dev_previousSizeTabs;
 	SDL_Renderer* pRenderer;
 	SDL_Window* pWindow;

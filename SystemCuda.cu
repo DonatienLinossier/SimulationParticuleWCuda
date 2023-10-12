@@ -28,7 +28,7 @@ int SystemCuda::initSDL() {
     }
 
     //Window Initialisation
-    pWindow = SDL_CreateWindow("CUDA SDL Example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_width, m_height, SDL_WINDOW_SHOWN);
+    pWindow = SDL_CreateWindow(WINDOW_TITLE, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, m_width, m_height, SDL_WINDOW_SHOWN);
     if (pWindow == NULL) {
         std::cerr << "Window could not be created! SDL_Error: " << SDL_GetError() << std::endl;
         return 1;

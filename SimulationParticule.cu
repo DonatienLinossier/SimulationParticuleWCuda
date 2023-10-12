@@ -533,8 +533,7 @@ __global__ void global_ParticulesToMetaBallsInfluence(particuleAoS particuleAoS,
 
                     
                     double grayscale = METABALLS_INTENSITY * exp(-METABALLS_ATTENUATIONFACTOR * distance);
-                    atomicAdd(element, grayscale);
-                    //*element += grayscale;                    
+                    atomicAdd(element, grayscale);                  
                 }
             }
         }
@@ -632,7 +631,9 @@ int main(int argc, char* argv[])
     }
 
 
-
+    bool repulse = false;
+    bool attract = false;
+    bool addParts = false;
     while (isOpen)
     {
         nbFrame++;
@@ -644,6 +645,7 @@ int main(int argc, char* argv[])
         //###################################
         //  Inputs
         //###################################
+
         while (SDL_PollEvent(&events))
         {
             switch (events.type)
@@ -660,17 +662,33 @@ int main(int argc, char* argv[])
                 system_.particules.addParticules(1, MousePosition.x, MousePosition.y, 0, 0);
                 break;
             case SDL_MOUSEBUTTONDOWN:
-                mouseDown = true;
+                if (events.button.button == SDL_BUTTON_MIDDLE) {
+                    addParts = true;
+                }
+                else if (events.button.button == SDL_BUTTON_RIGHT) {
+                    repulse = true;
+                }
+                else if (events.button.button == SDL_BUTTON_LEFT) {
+                    attract = true;
+                }
                 break;
             case SDL_MOUSEBUTTONUP:
-                mouseDown = false;
+                if (events.button.button == SDL_BUTTON_MIDDLE) {
+                    addParts = false;
+                }
+                else if (events.button.button == SDL_BUTTON_RIGHT) {
+                    repulse = false;
+                }
+                else if (events.button.button == SDL_BUTTON_LEFT) {
+                    attract = false;
+                }
                 break;
             case SDL_KEYDOWN:
                 break;
             }
 
         }
-        if (mouseDown) {
+        if (addParts) {
             SDL_GetMouseState(&MousePosition.x, &MousePosition.y);
             int x = MousePosition.x;
             int y = MousePosition.y;
@@ -690,7 +708,11 @@ int main(int argc, char* argv[])
 
 
             if (FORCEONMOUSEACTIVE) {
-                system_.particules.forceOnPoint(MousePosition.x, MousePosition.y, dt, FORCEONMOUSESTRENGtH);
+                if(attract)
+                    system_.particules.forceOnPoint(MousePosition.x, MousePosition.y, dt, FORCEONMOUSESTRENGtH);
+
+                if(repulse)
+                    system_.particules.forceOnPoint(MousePosition.x, MousePosition.y, dt, -FORCEONMOUSESTRENGtH);
             }
             system_.particules.CalcPosition(dt);
 

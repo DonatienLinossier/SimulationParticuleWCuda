@@ -11,8 +11,6 @@
 
 class SystemCuda {
 public:
-	//int m_partsMax;
-	int m_partsInit;
 	int m_width;
 	int m_height;
 	int m_taillemaxballe;
@@ -37,7 +35,7 @@ public:
 	bool* tabChange; 
 
 public:
-	SystemCuda(int width, int height, int taillemaxballe, int partsInit);
+	SystemCuda(int width, int height, int taillemaxballe);
 	int init();
 	void allocateGrilleP();
 	int initSDL();

@@ -69,7 +69,6 @@ __device__ cell particuleAoS::dev_toCell(int index, float SIZECASEX, float SIZEC
 	retoure.x = dev_cell[index].x;
 	retoure.y = dev_cell[index].y;
 	if (cx != dev_cell[index].x || cy != dev_cell[index].y) {
-		//p_actualiazed = false;
 
 		dev_cell[index].x = cx;
 		dev_cell[index].y = cy;
@@ -429,10 +428,6 @@ void particuleAoS::addParticules(int nbNewParticules, int x, int y, int vx, int 
 		printf("dev_radius:  %p (Offset: %zd bytes, Offset Modulo 32: %zd)\n", dev_radius, (uintptr_t)dev_radius - (uintptr_t)dev_x, ((uintptr_t)dev_radius - (uintptr_t)dev_x) % alignment);
 		printf("dev_changed: %p (Offset: %zd bytes, Offset Modulo 32: %zd)\n", dev_changed, (uintptr_t)dev_changed - (uintptr_t)dev_x, ((uintptr_t)dev_changed - (uintptr_t)dev_x) % alignment);
 	}
-	cudaError_t cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		printf("\n---------AddParticules before lalala - : %s\n", cudaGetErrorString(cudaStatus));
-	}
 
 	//Copie des anciens elements
 	if (cpy_alloc != nullptr) {
@@ -460,18 +455,10 @@ void particuleAoS::addParticules(int nbNewParticules, int x, int y, int vx, int 
 
 		cudaMemcpy(dev_changed, last_dev_changed, nbParticule * sizeof(bool), cudaMemcpyDeviceToDevice);
 
-		cudaStatus = cudaGetLastError();
-		if (cudaStatus != cudaSuccess) {
-			printf("\n---------post cpy - : %s\n", cudaGetErrorString(cudaStatus));
-		}
 
 
 
 		cudaFree(cpy_alloc);
-		cudaStatus = cudaGetLastError();
-		if (cudaStatus != cudaSuccess) {
-			printf("\n---------AddParticules post cpy free - : %s\n", cudaGetErrorString(cudaStatus));
-		}
 	}
 
 
@@ -503,10 +490,6 @@ void particuleAoS::addParticules(int nbNewParticules, int x, int y, int vx, int 
 		new_tension[i] = 0;
 		new_bool[i] = false;
 	}
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		printf("\n---------AddParticules pre cpy new elements - : %s\n", cudaGetErrorString(cudaStatus));
-	}
 
 	//Transfert des nouveaux elements sur le GPU
 	cudaMemcpy(dev_x + nbParticule, new_x, nbNewParticules * sizeof(float), cudaMemcpyHostToDevice);
@@ -520,17 +503,8 @@ void particuleAoS::addParticules(int nbNewParticules, int x, int y, int vx, int 
 	cudaMemcpy(dev_color + nbParticule, new_color, nbNewParticules * sizeof(uchar3), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_index + nbParticule, new_index, nbNewParticules * sizeof(int), cudaMemcpyHostToDevice);
 	cudaMemcpy(dev_radius + nbParticule, new_radius, nbNewParticules * sizeof(int), cudaMemcpyHostToDevice);
-
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		printf("\n---------AddParticules cpy new elements -1 - : %s\n", cudaGetErrorString(cudaStatus));
-	}
 	cudaMemcpy(dev_changed + nbParticule, new_bool, nbNewParticules * sizeof(bool), cudaMemcpyHostToDevice);
 
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		printf("\n---------AddParticules cpy new elements - : %s\n", cudaGetErrorString(cudaStatus));
-	}
 
 	free(new_x);
 	free(new_y);
@@ -545,17 +519,12 @@ void particuleAoS::addParticules(int nbNewParticules, int x, int y, int vx, int 
 	free(new_tension);
 	free(new_bool);
 
-	cudaStatus = cudaGetLastError();
-	if (cudaStatus != cudaSuccess) {
-		printf("\n---------AddParticules FREE - : %s\n", cudaGetErrorString(cudaStatus));
-	}
-
 	nbParticule += nbNewParticules;
 
 	nbBlock = (nbParticule + nbThread - 1) / nbThread;
-	cudaStatus = cudaGetLastError();
+	cudaError_t cudaStatus = cudaGetLastError();
 	if (cudaStatus != cudaSuccess) {
-		printf("\n---------AddParticules end - : %s\n", cudaGetErrorString(cudaStatus));
+		printf("\n---------AddParticules - : %s\n", cudaGetErrorString(cudaStatus));
 	}
 
 }

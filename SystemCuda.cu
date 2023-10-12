@@ -1,10 +1,9 @@
 #include "SystemCuda.cuh"
 
-SystemCuda::SystemCuda(int width, int height, int taillemaxballe, int partsInit) {
+SystemCuda::SystemCuda(int width, int height, int taillemaxballe) {
     m_width = width;
     m_height = height;
     m_taillemaxballe = taillemaxballe;
-    m_partsInit = partsInit;
     m_nbCaseX = (width / taillemaxballe) + 1;
     m_sizeCaseX = (float)width / (float)m_nbCaseX;
     m_nbCaseY = (height / taillemaxballe) + 1;
@@ -55,7 +54,6 @@ int SystemCuda::initSDL() {
 
     //Tab for the metaballs computation
     cudaMalloc(&dev_metaballs, m_width * sizeof(double) * m_height);
-
 
     return 0;
 }

@@ -62,14 +62,10 @@ __global__ void global_clearScreenNEw(uchar3* dev_gpuPixels, int width, int heig
 
     uchar3* element = dev_gpuPixels + index;
 
-    if (CLEAR_SCREEN_MODE == 0) {
+    #if (CLEAR_SCREEN_MODE == 0) {
+        *element = { BACKGROUND_R , BACKGROUND_G, BACKGROUND_B};
         
-        element->x = 0;
-        element->y = 0;// (blockIdx.x + threadIdx.x) / 4 % 255;
-        element->z = 0;//(width - (index / width) / 4) % 255;*/
-    }
-
-    else if (CLEAR_SCREEN_MODE == 1) {
+    #elif (CLEAR_SCREEN_MODE == 1)
         if (element->x > 20)
             element->x -= element->x / 20;
         else 
@@ -85,10 +81,10 @@ __global__ void global_clearScreenNEw(uchar3* dev_gpuPixels, int width, int heig
         if (element->z > 20)
             element->z -= element->z / 20;
         else
-            element->z = 0;
-    } 
-    
-    else if (CLEAR_SCREEN_MODE == 2) {
+            element->z = 0;    
+
+
+    #elif (CLEAR_SCREEN_MODE == 2) 
         if (element->x > 0)
             element->x -= element->y / 20;
 
@@ -97,7 +93,7 @@ __global__ void global_clearScreenNEw(uchar3* dev_gpuPixels, int width, int heig
 
         if (element->z > 0)
             element->z -= element->x / 20;
-    }
+    #endif
 }
 
 void clearScreenNEw(uchar3* dev_gpuPixels, int width, int height) {

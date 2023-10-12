@@ -13,8 +13,6 @@
 #include <iomanip> 
 
 
- 
-
 
 
 using namespace std;
@@ -533,9 +531,10 @@ __global__ void global_ParticulesToMetaBallsInfluence(particuleAoS particuleAoS,
                     if (element >= limite)
                         continue;
 
-
-                    int grayscale = METABALLS_INTENSITY * exp(-METABALLS_ATTENUATIONFACTOR * distance);
-                    *element += grayscale;                    
+                    
+                    double grayscale = METABALLS_INTENSITY * exp(-METABALLS_ATTENUATIONFACTOR * distance);
+                    atomicAdd(element, grayscale);
+                    //*element += grayscale;                    
                 }
             }
         }
@@ -549,14 +548,28 @@ __global__ void global_metaballsGridToRender(int nbPixels, double* dev_metaballs
         return;
     }
 
-    if (dev_metaballs[index] > METABALLS_THRESHOLD_DEEP) {
-        dev_gpuPixels[index] = { 0, 0, 100 };
-    } else if (dev_metaballs[index] > METABALLS_THRESHOLD_MEDIUM) {
-        dev_gpuPixels[index] = { 0, 0, 255 };
+    float p_height = index / width;
+    float p_width = index % width;
+
+    //if (dev_metaballs[index] > METABALLS_THRESHOLD_DEEP) {
+        //dev_gpuPixels[index] = { 255, 0, 0};
+    //} else
+    if (dev_metaballs[index] > METABALLS_THRESHOLD_MEDIUM) {
+        dev_gpuPixels[index] = { static_cast<unsigned char>((p_width / width) * 255), static_cast<unsigned char>((p_height / height) * 255), static_cast<unsigned char>(((height - p_height) / height) * 255) };
     }
+    #if METABALLS_BORDER_ACTIVE
     else if (dev_metaballs[index] > METABALLS_THRESHOLD_BORDER) {
-        dev_gpuPixels[index] =  { 200, 200, 255 };
+        dev_gpuPixels[index] = { 255, 255, 255 };
     }
+    #endif
+        /*if (dev_metaballs[index] > METABALLS_THRESHOLD_DEEP) {
+            dev_gpuPixels[index] = { 0, 0, 100 };
+        } else if (dev_metaballs[index] > METABALLS_THRESHOLD_MEDIUM) {
+            dev_gpuPixels[index] = { 0, 0, 255 };
+        }
+        else if (dev_metaballs[index] > METABALLS_THRESHOLD_BORDER) {
+            dev_gpuPixels[index] =  { 200, 200, 255 }; 
+        }*/
 }
 
 
@@ -582,7 +595,8 @@ void call_metaballs(SystemCuda system_) {
 
 int main(int argc, char* argv[])
 {
-    SystemCuda system_(WIDTH, HEIGHT, PARTICULE_SIZE * SIZE_CASE_COEF, NB_PARTICULES);
+
+    SystemCuda system_(WIDTH, HEIGHT, PARTICULE_SIZE * SIZE_CASE_COEF);
     unsigned int nbFrame = 0;
     float sommeRender = 0;
     float sommeComputation = 0;
@@ -606,7 +620,7 @@ int main(int argc, char* argv[])
     TTF_Font* Sanss = TTF_OpenFont("OpenSans-Bold.ttf", 24);
     SDL_Surface* surfaceMessage = nullptr;
     SDL_Texture* Message = nullptr;
-    SDL_Rect Message_rect = MESSAGE_RECT; //Rect of the FPS / nb of particules
+    SDL_Rect Message_rect = MESSAGE_RECT; //Rect of the FPS
     bool mouseDown = false;
     float dt = DELTA_TIME; //Delta time between each computation
 

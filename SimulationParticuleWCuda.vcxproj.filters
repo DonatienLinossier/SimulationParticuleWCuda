@@ -66,4 +66,9 @@
       <Filter>src</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Image Include="icon.bmp">
+      <Filter>assets</Filter>
+    </Image>
+  </ItemGroup>
 </Project>

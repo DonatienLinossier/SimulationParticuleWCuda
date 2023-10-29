@@ -758,6 +758,9 @@ int main(int argc, char* argv[])
                 int numBlocks = (system_.m_nbCaseX * system_.m_nbCaseY + nbthread - 1) / nbthread;
                 GPU_drawSizeMiniMapNEw << <numBlocks, nbthread >> > (system_.dev_gpuPixels, SizeMapX, SizeMapY, SizeMapW, SizeMapH, system_.m_nbCaseX, system_.m_nbCaseY, system_.m_width, system_.m_height, system_.dev_sizeTabs);
             }
+
+            if(DRAW_COLOR_BASED_ON_SPEED)
+                system_.particules.setColorBasedOnSpeed();
             if(DRAW_CIRCLE_FILLED)
                 system_.particules.GPUdrawFilledCircle(system_.dev_gpuPixels, system_.m_width, system_.m_height);
             if(DRAW_CIRCLE_EDGE)

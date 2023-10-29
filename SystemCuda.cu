@@ -34,6 +34,13 @@ int SystemCuda::initSDL() {
         return 1;
     }
 
+    SDL_Surface* iconSurface = SDL_LoadBMP("icon.bmp");
+    if (!iconSurface) {
+        // Icon loading failed
+    }
+
+    SDL_SetWindowIcon(pWindow, iconSurface);
+
     //Renderer Initialisation
     pRenderer = SDL_CreateRenderer(pWindow, -1, SDL_RENDERER_ACCELERATED);
     if (pRenderer == NULL) {

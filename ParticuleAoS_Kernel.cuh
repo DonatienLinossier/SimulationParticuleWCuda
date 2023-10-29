@@ -11,4 +11,5 @@ __global__ void CalcPosition_global(float* p_x, float* p_y, float* p_lastx, floa
 __global__ void toCell_global(float* p_x, float* p_y, cell* p_cell, int nbParticule, int SIZECASEX, int SIZECASEY, int CASEMAXX, int CASEMAXY);
 //__global__ void collision_global(float* p_x, float* p_y, int* p_radius, cell* p_cell, int nbParticule, int** dev_grilleP2D, int* dev_sizeTabs, int CASEMAXX, int CASEMAXY, int width, int height);
 __global__ void borderCollision_global(float* p_x, float* p_y, int* p_radius, int width, int height, int nbParticule);
+__global__ void setColorBasedOnVelocity(float* p_vx, float* p_vy, uchar3* color, int nbParticule);
 #endif

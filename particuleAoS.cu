@@ -806,6 +806,18 @@ void particuleAoS::GPUdrawFilledCircle(uchar3* dev_gpuPixels, int width, int hei
 }
 
 
+void particuleAoS::setColorBasedOnSpeed() {
+	int size = nbParticule;
+
+	int nbthread = 1024;
+	int numBlocks = (size + nbthread - 1) / nbthread;
+
+	setColorBasedOnVelocity << <numBlocks, nbthread >> > (dev_vx, dev_vy, dev_color, size);
+	//global_GPUdrawFilledCircle << <numBlocks, nbthread >> > (dev_gpuPixels, width, height, dev_x, dev_y, dev_radius, dev_color, size);
+
+
+}
+
 
 
 

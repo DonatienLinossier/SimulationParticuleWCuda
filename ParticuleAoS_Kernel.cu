@@ -116,3 +116,16 @@ __global__ void borderCollision_global(float* p_x, float* p_y, int* p_radius, in
 		p_y[index] = p_radius[index];
 	}
 }
+
+__global__ void setColorBasedOnVelocity(float* p_vx, float* p_vy, uchar3* color, int nbParticule) {
+
+	int index = blockIdx.x * blockDim.x + threadIdx.x;
+
+	if (index >= nbParticule) {
+		return;
+	}
+
+	float velocity = sqrtf(p_vx[index] * p_vx[index] + p_vy[index] * p_vy[index]);
+	color[index] = { static_cast<unsigned char>(velocity/5),static_cast<unsigned char>(255-velocity/5),0};
+
+}

@@ -31,6 +31,7 @@ public:
 	void CalcPosition(float dt);
 	void toCell(float SIZECASEX, float SIZECASEY, int CASEMAXX, int CASEMAXY);
 	void borderCollision();
+	void setColorBasedOnSpeed();
 	__device__ cell dev_toCell(int index, float SIZECASEX, float SIZECASEY, int CASEMAXX, int CASEMAXY);
 	void collision(int** dev_grilleP2D, int* dev_sizeTabs);
 	void GPUdraw_point(uint32_t* buf, int width, int height);

@@ -7,8 +7,8 @@
 #define WINDOW_TITLE "Particule Simulation with cuda"
 
 
-#define NBNEWPARTS 10000 
-#define PARTICULE_SIZE 5
+#define NBNEWPARTS 50000
+#define PARTICULE_SIZE 2
 #define SIZE_CASE_COEF 3//Min 2, can be increased to reduce realloc of tabs, at the cost of heavier computation
 
 #define FORCEONMOUSEACTIVE true
@@ -31,9 +31,10 @@
 
 #define CLEAR_SCREEN_MODE 0//0-> black screen; 1-> {x-x/20, y-y/20, z-z/20, . }, 2-> {x-y/20, y-z/20, z-x/20, . }
 
-#define DRAW_CIRCLE_FILLED false
-#define DRAW_CIRCLE_EDGE false
+#define DRAW_CIRCLE_FILLED true
+#define DRAW_CIRCLE_EDGE true
 #define GAUSSIAN_BLUR false
+#define DRAW_COLOR_BASED_ON_SPEED false // Beta
 
 
 
@@ -61,7 +62,7 @@
 
 
 
-#define DELTA_TIME 0.001f //Delta of the simulation. Higher speed up the simulation at the cost of stability and vice-versa                                                                              //TODO -> find a formula 
+#define DELTA_TIME 0.0005f //Delta of the simulation. Higher speed up the simulation at the cost of stability and vice-versa                                                                              //TODO -> find a formula 
 
 
 
@@ -69,7 +70,7 @@
 
 
 //Metaballs parameters
-#define METABALLS_RENDERING true //True to render metaballs, else false
+#define METABALLS_RENDERING false //True to render metaballs, else false
 #define METABALLS_BORDER_ACTIVE true
 #define METABALLS_RADIUSCOMPAREDTOPARTICULESIZE 2 //Directly affect metaballs quality, as the performances
 #define METABALLS_INTENSITY 100
